@@ -28,7 +28,7 @@ public class ClientHandler implements Runnable{
             //read client username
             clientHandlers.add(this);
             //add this to the arraylist of clienthandlers
-            broadcast("Server: " + clientname + "has joined");
+            broadcast("Server: " + clientname + " has joined");
 
         }catch(IOException e) {
 
@@ -72,7 +72,7 @@ public class ClientHandler implements Runnable{
     public void disconnect() {
         clientHandlers.remove(this);
         // take out this client
-        broadcast("Server:" + this.clientname + "has disconnected");
+        broadcast("Server:" + this.clientname + " has disconnected");
     }
 
 

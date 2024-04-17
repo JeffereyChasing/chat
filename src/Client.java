@@ -26,6 +26,7 @@ public class Client  extends JFrame {
     private BufferedWriter bufferedWriter;
     //used for read and write
     private String clientname;
+    private int clientCount;
 
 
     private JTextArea debugTextArea;
@@ -35,6 +36,36 @@ public class Client  extends JFrame {
     private boolean connected;
 
     public Client(Socket socket, String clientname){
+
+
+
+        //visiualization
+        debugTextArea = new JTextArea();
+        inputField = new JTextField();
+        sendButton = new JButton("Send");
+        connectButton = new JButton("Connect");
+
+
+
+
+        JPanel panel = new JPanel();
+        panel.add(connectButton);
+        panel.add(inputField);
+        panel.add(sendButton);
+
+        add(panel, BorderLayout.NORTH);
+        add(new JScrollPane(debugTextArea), BorderLayout.CENTER);
+
+        setSize(400, 300);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setVisible(true);
+
+        //visiualization
+
+
+
+
+
 
         try {
             this.socket = socket;
@@ -58,7 +89,7 @@ public class Client  extends JFrame {
             Scanner scanner = new Scanner(System.in);
             while (socket.isConnected()) {
                 String messageToSend = scanner.nextLine();
-                bufferedWriter.write(clientname + ":"+messageToSend);
+                bufferedWriter.write(clientname + " : "+messageToSend);
                 bufferedWriter.newLine();
                 bufferedWriter.flush();
 
@@ -78,6 +109,7 @@ public class Client  extends JFrame {
                     try {
                         messagefromgroup = bufferedReader.readLine();
                         System.out.println(messagefromgroup);
+                        debugTextArea.append(messagefromgroup +"\n");
                     }catch(IOException e) {
 
 
@@ -91,12 +123,13 @@ public class Client  extends JFrame {
     }
 
     public static void main(String []args) throws UnknownHostException, IOException {
-
-        Scanner scanner = new Scanner (System.in);
-        System.out.println("Client name: ");
-        String clientname = scanner.nextLine();
+        Scanner myObj = new Scanner(System.in);
+        // Create a Scanner object
+        System.out.println("Enter username");
+        String clientname = myObj.nextLine();
         Socket socket = new Socket("localhost",9898);
         Client client = new Client(socket,clientname);
+        System.out.println(client.clientCount);
         client.Listen();
         client.sendMessage();
 
