@@ -2,6 +2,7 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.Timestamp;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -11,6 +12,7 @@ public class Server extends JFrame {
 
     private ServerSocket serverSocket;
     public JTextArea debugTextArea;
+    private int clientCount;
 
     public Server(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
@@ -18,12 +20,28 @@ public class Server extends JFrame {
 
     public void start() {
         try {
+
+            debugTextArea = new JTextArea();
+            add(new JScrollPane(debugTextArea));
+            setSize(400, 300);
+            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            setVisible(true);
+            debugTextArea.append("Chat Server started at " + new Timestamp(System.currentTimeMillis())+ "\n");
+
+            clientCount = 0;
+
             while (!serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
                 //stop until connected
                 System.out.println("New Client");
+                clientCount++;
 
                 ClientHandler clientHandler = new ClientHandler(socket);
+                debugTextArea.append("Starting thread for Client " + clientCount + " at "+ new Timestamp(System.currentTimeMillis()) +"\n");
+                debugTextArea.append("Client " + clientCount + "'s host name is localhost" + "\n");
+                debugTextArea.append("Client " + clientCount + "'s IP Address is " + socket.getInetAddress() + "\n");
+
+
 
                 Thread thread = new Thread(clientHandler);
                 thread.start();
