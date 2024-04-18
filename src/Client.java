@@ -1,4 +1,3 @@
-
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,124 +17,93 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-public class Client  extends JFrame {
+public class Client extends JFrame {
 
     private Socket socket;
-    //each socket for each client
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
-    //used for read and write
     private String clientname;
-    private int clientCount;
-
 
     private JTextArea debugTextArea;
     private JTextField inputField;
-    private JButton sendButton;
-    private JButton connectButton;
-    private boolean connected;
 
-    public Client(Socket socket, String clientname){
+    public Client(Socket socket, String clientname) {
+        this.socket = socket;
+        this.clientname = clientname;
 
-
-
-        //visiualization
         debugTextArea = new JTextArea();
         inputField = new JTextField();
-        sendButton = new JButton("Send");
-        connectButton = new JButton("Connect");
+        JButton sendButton = new JButton("Send");
 
+        JPanel inputPanel = new JPanel(new BorderLayout());
+        inputPanel.add(inputField, BorderLayout.CENTER);
+        inputPanel.add(sendButton, BorderLayout.EAST);
 
-
-
-        JPanel panel = new JPanel();
-        panel.add(connectButton);
-        panel.add(inputField);
-        panel.add(sendButton);
-
-        add(panel, BorderLayout.NORTH);
+        add(inputPanel, BorderLayout.SOUTH);
         add(new JScrollPane(debugTextArea), BorderLayout.CENTER);
 
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
 
-        //visiualization
-
-
-
-
-
-
-        try {
-            this.socket = socket;
-            this.bufferedWriter =  new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            this.bufferedReader =  new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            this.clientname = clientname;
-            //read client username
-
-        }catch(IOException e) {
-
-        }
-    }
-
-    public void sendMessage() {
+        sendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sendMessageToServer(inputField.getText());
+                inputField.setText("");
+            }
+        });
 
         try {
+            this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            // Send the client name to the server
             bufferedWriter.write(clientname);
             bufferedWriter.newLine();
             bufferedWriter.flush();
 
-            Scanner scanner = new Scanner(System.in);
-            while (socket.isConnected()) {
-                String messageToSend = scanner.nextLine();
-                bufferedWriter.write(clientname + " : "+messageToSend);
-                bufferedWriter.newLine();
-                bufferedWriter.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-            }
-        }catch(IOException e) {
-
+    public void sendMessageToServer(String message) {
+        try {
+            bufferedWriter.write(clientname + " : " + message);
+            bufferedWriter.newLine();
+            bufferedWriter.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     public void Listen() {
         new Thread(new Runnable() {
-
             @Override
             public void run() {
-                String messagefromgroup;
-                while (socket.isConnected()) {
-                    try {
-                        messagefromgroup = bufferedReader.readLine();
-                        System.out.println(messagefromgroup);
-                        debugTextArea.append(messagefromgroup +"\n");
-                    }catch(IOException e) {
-
-
+                String messageFromServer;
+                try {
+                    while ((messageFromServer = bufferedReader.readLine()) != null) {
+                        debugTextArea.append(messageFromServer + "\n");
                     }
-
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-
             }
-
         }).start();
     }
 
-    public static void main(String []args) throws UnknownHostException, IOException {
-        Scanner myObj = new Scanner(System.in);
+    public static void main(String[] args) throws UnknownHostException, IOException {
+        // Get the client's username
+        String clientname = "YourClientName";  // Set a default client name
         // Create a Scanner object
         System.out.println("Enter username");
-        String clientname = myObj.nextLine();
-        Socket socket = new Socket("localhost",9898);
-        Client client = new Client(socket,clientname);
-        System.out.println(client.clientCount);
+        Scanner myObj = new Scanner(System.in);
+        clientname = myObj.nextLine();
+
+        Socket socket = new Socket("localhost", 9898);
+        Client client = new Client(socket, clientname);
         client.Listen();
-        client.sendMessage();
-
     }
-
-
-
-
 }
